@@ -601,47 +601,84 @@ The following outputs are exported:
 
 ### <a name="output_ai_services"></a> [ai\_services](#output\_ai\_services)
 
-Description: The AI Services resource, if created.
+Description: The AI Services resource, if created, otherwise null.
+
+- `id`: The ID of the AI Services resource. *This will be deprecated in favor of `resource_id` in the next release.
+- `resource_id`: The ID of the AI Services resource.
+- `name`: The ID of the AI Services resource.
+- `endpoint`: The endpoint of the AI Services resource.
+- `identity_id`: If there is an associated identity, the Service Principal ID for the AI Services resource identity.
 
 ### <a name="output_ai_services_service_connection"></a> [ai\_services\_service\_connection](#output\_ai\_services\_service\_connection)
 
-Description: The service connection between the AIServices and the workspace, if created.
+Description: The service connection between the AIServices and the workspace, if created, otherwise null.
+
+- `id`: The ID of the Service Connection resource. *This will be deprecated in favor of `resource_id` in the next release.
+- `resource_id`: The ID of the Service Connection resource.
+- `name`: The name of the Service Connection.
+- `target`: The target of the Service Connection. This is usually the endpoint of the associated service.
+- `is_shared`: Whether or not the Service Connection is for use by all workspace users.
+- `use_workspace_managed_identity`: Whether or not the workspace managed identity is used.
 
 ### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
 
-Description: The application insights resource, if created.
+Description: The Application Insights resource, if created, otherwise null.
+
+- `resource_id`: The ID of the Application Insights resource.
+- `name`: The name of the Application Insights resource.
+- `app_id`: The App ID of the Application Insights resource.
+- `connection_string`: The connection string for the Application Insights resource.
+- `instrumentation_key`: The instrumentation key for the Application Insights resource.
 
 ### <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry)
 
-Description: The container registry resource, if created.
+Description: The Azure Container Registry resource, if created, otherwise null.
+
+- `resource_id`: The ID of the Container Registry resource.
+- `name`: The name of the Container Registry resource.
 
 ### <a name="output_key_vault"></a> [key\_vault](#output\_key\_vault)
 
-Description: The key vault resource, if created.
+Description: The Azure Key Vault resource, if created, otherwise null.
+
+- `resource_id`: The ID of the Key Vault resource.
+- `uri`: The URI to perform operations on the keys and secrets within the Key Vault resource.
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
-Description: A map of the private endpoints created.
+Description: A map of the private endpoints created for the Azure Machine Learning Workspace.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
-Description: The machine learning workspace.
+Description: The full Azure Machine Learning Workspace. *This will be deprecated in favor of the `workspace` output in the next major release.
 
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
-Description: The ID of the machine learning workspace.
+Description: The ID of the Azure Machine Learning Workspace.
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
-Description: The storage account resource, if created.
+Description: The Storage Account resource, if created, otherwise null.
+
+- `resource_id`: The ID of the Storage Account resource.
+- `name`: The name of the Storage Account resource.
 
 ### <a name="output_workspace"></a> [workspace](#output\_workspace)
 
-Description: The machine learning workspace created.
+Description: The Azure Machine Learning Workspace created.
+
+- `name`: The name of the Azure Machine Learning Workspace.
+- `container_registry_id`: The ID of the associated container registry, if applicable.
+- `storage_account_id`: The ID of the associated storage account.
+- `key_vault_id`: The ID of the associated key vault.
+- `application_insights_id`: The ID of the associated app. insights, if applicable.
 
 ### <a name="output_workspace_identity"></a> [workspace\_identity](#output\_workspace\_identity)
 
 Description: The identity for the created workspace.
+
+- `principal_id`: The Service Principal ID for the identity.
+- `type`: The type of identity (system-assigned, user-assigned, etc.)
 
 ## Modules
 
