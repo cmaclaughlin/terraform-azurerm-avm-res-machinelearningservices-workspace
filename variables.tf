@@ -134,7 +134,12 @@ DESCRIPTION
 variable "create_compute_instance" {
   type        = bool
   default     = false
-  description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet."
+  description = <<DESCRIPTION
+  Specifies whether a compute instance should be created for the workspace to provision the managed vnet.
+
+  *This will be deprecated in favor of the `var.workspace_compute` in a future release. 
+  Until then, if `var.create_compute_instance` is `true`, a compute instance will be provisioned _in addition_ to the objects defined in the `var.workspace_compute` map.
+  DESCRIPTION
 }
 
 # required AVM interfaces
@@ -461,7 +466,6 @@ DESCRIPTION
 }
 
 # required AVM interface
-# tflint-ignore: terraform_unused_declarations
 variable "tags" {
   type        = map(string)
   default     = null
