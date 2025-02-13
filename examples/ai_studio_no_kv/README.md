@@ -63,12 +63,6 @@ module "aihub" {
     isolation_mode = "Disabled"
     spark_ready    = true
   }
-
-  aiservices = {
-    create_new                = true
-    create_service_connection = true
-  }
-
   enable_telemetry = var.enable_telemetry
 }
 ```

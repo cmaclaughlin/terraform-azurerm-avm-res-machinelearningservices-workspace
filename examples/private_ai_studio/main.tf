@@ -286,10 +286,6 @@ module "avm_res_storage_storageaccount" {
   }
 }
 
-
-
-
-
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -318,11 +314,6 @@ module "aihub" {
 
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
-  }
-
-  aiservices = {
-    create_new                = true
-    create_service_connection = true
   }
 
   private_endpoints = {

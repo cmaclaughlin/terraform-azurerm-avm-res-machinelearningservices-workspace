@@ -147,28 +147,6 @@ resource "azapi_resource" "project" {
   }
 }
 
-# AzAPI AI Services Connection
-resource "azapi_resource" "aiserviceconnection" {
-  count = var.aiservices.create_service_connection ? 1 : 0
-
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-07-01-preview"
-  body = {
-    properties = {
-      category      = "AIServices"
-      target        = local.ai_services.properties.endpoint
-      authType      = "AAD"
-      isSharedToAll = true
-      metadata = {
-        ApiType    = "Azure",
-        ResourceId = local.ai_services_id
-      }
-    }
-  }
-  name                   = "aiserviceconnection${var.name}"
-  parent_id              = local.aml_resource.id
-  response_export_values = ["*"]
-}
-
 resource "azurerm_management_lock" "this" {
   count = var.lock != null ? 1 : 0
 

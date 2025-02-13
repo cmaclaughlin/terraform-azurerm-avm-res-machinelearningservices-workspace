@@ -1,10 +1,6 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -58,37 +54,6 @@ resource "azurerm_key_vault" "example" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
-resource "azapi_resource" "aiservice" {
-  type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  body = {
-    properties = {
-      publicNetworkAccess = "Enabled"
-      apiProperties = {
-        statisticsEnabled = false
-      }
-    }
-    sku = {
-      "name" : "S0",
-    }
-    kind = "AIServices"
-  }
-  location               = var.location
-  name                   = module.naming.cognitive_account.name_unique
-  parent_id              = azurerm_resource_group.example.id
-  response_export_values = ["*"]
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -102,12 +67,6 @@ module "aihub" {
   resource_group_name     = azurerm_resource_group.example.name
   kind                    = "Hub"
   workspace_friendly_name = "AI Studio Hub"
-
-  aiservices = {
-    name                      = azapi_resource.aiservice.name
-    resource_group_id         = azapi_resource.aiservice.parent_id
-    create_service_connection = true
-  }
 
   key_vault = {
     resource_id = azurerm_key_vault.example.id

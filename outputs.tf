@@ -1,12 +1,6 @@
 output "ai_services_service_connection" {
   description = "The service connection between the AIServices and the workspace, if created."
-  value = var.aiservices.create_service_connection ? {
-    name                           = azapi_resource.aiserviceconnection[0].output.name
-    id                             = azapi_resource.aiserviceconnection[0].output.id
-    is_shared                      = azapi_resource.aiserviceconnection[0].output.properties.isSharedToAll
-    target                         = azapi_resource.aiserviceconnection[0].output.properties.target
-    use_workspace_managed_identity = azapi_resource.aiserviceconnection[0].output.properties.useWorkspaceManagedIdentity
-  } : null
+  value       = null
 }
 
 output "private_endpoints" {
