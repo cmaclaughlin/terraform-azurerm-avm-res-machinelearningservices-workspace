@@ -31,33 +31,6 @@ variable "ai_studio_hub_id" {
   }
 }
 
-variable "aiservices" {
-  type = object({
-    create_new                = optional(bool, false)
-    analysis_services_sku     = optional(string, "S0")
-    name                      = optional(string, null)
-    resource_group_id         = optional(string, null)
-    tags                      = optional(map(string), null)
-    create_service_connection = optional(bool, false)
-  })
-  default = {
-    create_new = false
-  }
-  description = <<DESCRIPTION
-An object describing the AI Services resource to create or reference. This includes the following properties:
-- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
-- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
-- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
-- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags`: (Optional) Tags for the AI Services resource.
-- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
-DESCRIPTION
-
-  validation {
-    condition     = !(var.aiservices.create_new && var.aiservices.resource_group_id != null && var.aiservices.name != null)
-    error_message = "When creating new AI Services resource, `name` and `resource_group_id` must be null."
-  }
-}
 
 variable "application_insights" {
   type = object({
@@ -469,5 +442,74 @@ DESCRIPTION
   validation {
     condition     = length(var.workspace_managed_network.outbound_rules.private_endpoint) == 0 || alltrue([for _, v in var.workspace_managed_network.outbound_rules.private_endpoint : length(v.sub_resource_target) > 0])
     error_message = "`sub_resource_target` is required for every private endpoint outbound rule."
+  }
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "workspace_connections" {
+  type = map(object({
+    category = string
+    target = string
+    auth_type = string
+    expiry_time = optional(string, null)
+    shared_by_all = optional(bool, false)
+    use_workspace_managed_identity = optional(bool, false)
+    shared_user_list = optional(set(string), [])
+    credentials = optional(object({
+      access_key_id = optional(string, null)
+      secret_access_key = optional(string, null)
+      key = optional(string, null)
+      keys = optional(map(string), {})
+      client_id = optional(string, null)
+      resource_id = optional(string, null)
+      auth_url = optional(string, null)
+      client_secret = optional(string, null)
+      dev_token = optional(string, null)
+      password = optional(string, null)
+      refresh_token = optional(string, null)
+      username = optional(string, null)
+      pat = optional(string, null)
+      sas = optional(string, null)
+      security_token = optional(string, null)
+    }), {})
+  }))
+  default = { }
+  sensitive = true
+  description = <<DESCRIPTION
+A map of details required to connect resources to the provisioned workspace.
+
+- `category`: The type of resource or service to be connected. Valid options include:
+    "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
+    "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
+    "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics",
+    "AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry",
+    "CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm",
+    "Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git",
+    "GoogleAdWords" , "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix",
+    "Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql",
+    "Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix",
+    "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
+    "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
+    "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
+- `target`: 
+
+DESCRIPTION
+
+  validation {
+    condition = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : contains(["ADLSGen2","AIServices","AmazonMws","AmazonRdsForOracle","AmazonRdsForSqlServer","AmazonRedshift","AmazonS3Compatible", "ApiKey","AzureBlob","AzureDatabricksDeltaLake","AzureDataExplorer","AzureMariaDb","AzureMySqlDb","AzureOneLake","AzureOpenAI","AzurePostgresDb","AzureSqlDb","AzureSqlMi","AzureSynapseAnalytics","AzureTableStorage","BingLLMSearch","Cassandra","CognitiveSearch","CognitiveService","Concur","ContainerRegistry","CosmosDb","CosmosDbMongoDbApi","Couchbase","CustomKeys","Db2","Drill","Dynamics","DynamicsAx","DynamicsCrm","Elasticsearch","Eloqua","FileServer","FtpServer","GenericContainerRegistry","GenericHttp","GenericRest","Git","GoogleAdWords","GoogleBigQuery","GoogleCloudStorage","Greenplum","Hbase","Hdfs","Hive","Hubspot","Impala","Informix","Jira","Magento","ManagedOnlineEndpoint","MariaDb","Marketo","MicrosoftAccess","MongoDbAtlas","MongoDbV2","MySql","Netezza","ODataRest","Odbc","Office365","OpenAI","Oracle","OracleCloudStorage","OracleServiceCloud","PayPal","Phoenix","Pinecone","PostgreSql","Presto","PythonFeed","QuickBooks","Redis","Responsys","S3","Salesforce","SalesforceMarketingCloud","SalesforceServiceCloud","SapBw","SapCloudForCustomer","SapEcc","SapHana","SapOpenHub","SapTable","Serp","Serverless","ServiceNow","Sftp","SharePointOnlineList","Shopify","Snowflake","Spark","SqlServer","Square","Sybase","Teradata","Vertica","WebTable","Xero","Zoho"], c.category) ])
+    error_message = <<DESCRIPTION
+Valid connection categories include: "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
+"AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
+"AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics",
+"AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry",
+"CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm",
+"Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git",
+"GoogleAdWords" , "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix",
+"Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql",
+"Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix",
+"Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
+"SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
+"Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
+DESCRIPTION
   }
 }

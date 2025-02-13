@@ -1,13 +1,3 @@
-output "ai_services" {
-  description = "The AI Services resource, if created."
-  value = var.aiservices.create_new ? {
-    id          = azapi_resource.aiservice[0].output.id
-    name        = azapi_resource.aiservice[0].output.name
-    endpoint    = azapi_resource.aiservice[0].output.properties.endpoint
-    identity_id = try(azapi_resource.aiservice[0].output.identity.principalId, null)
-  } : null
-}
-
 output "ai_services_service_connection" {
   description = "The service connection between the AIServices and the workspace, if created."
   value = var.aiservices.create_service_connection ? {
@@ -22,13 +12,6 @@ output "ai_services_service_connection" {
 output "private_endpoints" {
   description = "A map of the private endpoints created."
   value       = azurerm_private_endpoint.this
-}
-
-# Guidance change to prohibit output of resource as an object. This will be a breaking change next major release.
-# https://azure.github.io/Azure-Verified-Modules/specs/terraform/#id-tffr2---category-outputs---additional-terraform-outputs
-output "resource" {
-  description = "The machine learning workspace."
-  value       = local.aml_resource
 }
 
 output "resource_id" {
