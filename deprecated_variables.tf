@@ -1,7 +1,11 @@
+# tflint-ignore: terraform_unused_declarations
 variable "create_compute_instance" {
   type        = bool
   default     = false
-  description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet. **Due to the complexity of compute instances and to prevent setting precedent that compute provisioning will be included in this module, this will be deprecated in a future release."
+  description = <<DESCRIPTION
+DEPRECATED. No compute instance is provisioned when `true`.
+Specifies whether a compute instance should be created for the workspace to provision the managed vnet.
+DESCRIPTION
 }
 
 variable "outbound_rules" {
