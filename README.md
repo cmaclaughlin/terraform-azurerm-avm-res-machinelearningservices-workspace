@@ -528,9 +528,116 @@ Each connection includes the following:
 
 The `credentials` block is dependent on the `auth_type`.
 
-When `auth_type` is "AAD" or "None", `credentials` should be `null`.
+When "AAD" or "None":
 
-When
+```hcl
+{
+  credentials = null
+}
+```
+
+When "AccessKey":
+
+```hcl
+{
+  credentials = {
+    access_key_id = <value>
+    secret_access_key = <value>
+  }
+}
+```
+
+When "AccountKey" or "ApiKey":
+
+```hcl
+{
+  credentials = {
+    key = <value>
+  }
+}
+```
+
+When "CustomKeys":
+
+```hcl
+{
+  credentials = {
+    keys = {
+      {customized property} = <value>
+    }
+  }
+}
+```
+
+When "ManagedIdentity":
+
+```hcl
+{
+  credentials = {
+    client_id = <value>
+    resource_id = <value>
+  }
+}
+```
+
+When "OAuth2":
+
+```hcl
+{
+  credentials = {
+    auth_url = <value>
+    client_secret = <value>
+    dev_token = <value>
+    password = <value>
+    refresh_token = <value>
+    username = <value>
+  }
+}
+```
+
+When "PAT":
+
+```hcl
+{
+  credentials = {
+    pat = <value>
+  }
+}
+```
+
+When "SAS":
+
+```hcl
+{
+  credentials = {
+    sas = <value>
+  }
+}
+```
+
+When "ServicePrincipal":
+
+```hcl
+{
+  credentials = {
+    client_id = <value>
+    client_secret = <value>
+    tenant_id = <value>
+  }
+}
+```
+
+When "UsernamePassword":
+
+```hcl
+{
+  credentials = {
+    password = <value>
+    username = <value>
+    security_token = <value>
+  }
+}
+```
 
 Type:
 
@@ -558,6 +665,7 @@ map(object({
       pat               = optional(string, null)
       sas               = optional(string, null)
       security_token    = optional(string, null)
+      tenant_id         = optional(string, null)
     }), null)
   }))
 ```
