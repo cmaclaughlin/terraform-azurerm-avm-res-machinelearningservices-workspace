@@ -56,17 +56,13 @@ variable "outbound_rules" {
   DESCRIPTION
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "storage_access_type" {
   type        = string
-  default     = "identity"
+  default     = null
   description = <<DESCRIPTION
+DEPRECATED. This property was removed from the schema for machine learning workspaces as of 2024-10-06.
+
 The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'.
-
-**This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
 DESCRIPTION
-
-  validation {
-    condition     = contains(["accessKey", "identity"], var.storage_access_type)
-    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
-  }
 }

@@ -364,13 +364,12 @@ variable "tags" {
 # tflint-ignore: terraform_unused_declarations
 variable "workspace_connections" {
   type = map(object({
-    category                       = string
-    target                         = string
-    auth_type                      = string
-    expiry_time                    = optional(string, null)
-    shared_by_all                  = optional(bool, false)
-    use_workspace_managed_identity = optional(bool, false)
-    shared_user_list               = optional(set(string), [])
+    category         = string
+    target           = string
+    auth_type        = string
+    expiry_time      = optional(string, null)
+    shared_by_all    = optional(bool, false)
+    shared_user_list = optional(set(string), [])
     credentials = optional(object({
       access_key_id     = optional(string, null)
       secret_access_key = optional(string, null)
@@ -387,11 +386,13 @@ variable "workspace_connections" {
       pat               = optional(string, null)
       sas               = optional(string, null)
       security_token    = optional(string, null)
-    }), {})
+    }), null)
   }))
   default     = {}
   description = <<DESCRIPTION
 A map of details required to connect resources to the provisioned workspace.
+
+Each connection includes the following:
 
 - `category`: The type of resource or service to be connected. Valid options include:
     "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
@@ -407,6 +408,22 @@ A map of details required to connect resources to the provisioned workspace.
     "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
     "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
 - `target`: 
+- `auth_type`: The method of authentication. Valid options include:
+    "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity", "None", 
+    "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
+- `credentials`: Object with the specifics for authentication. Dependent on `auth_type`.
+- `expiry_time`: (Optional) The connection's time of expiration.
+- `shared_by_all`: (Optional) Indicates whether the connection is shared to all users in the workspace.
+- `shared_user_list`: (Optional) The list of users who can use the connection.
+
+---
+
+The `credentials` block is dependent on the `auth_type`.
+
+When `auth_type` is "AAD" or "None", `credentials` should be `null`.
+
+When
+
 
 DESCRIPTION
   sensitive   = true
@@ -426,6 +443,19 @@ Valid connection categories include: "ADLSGen2", "AIServices", "AmazonMws", "Ama
 "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
 "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
 "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : contains(["AAD", "AccessKey", "AccountKey", "ApiKey", "CustomKeys", "ManagedIdentity", "None", "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"], c.auth_type)])
+    error_message = <<DESCRIPTION
+Valid authentication methods include: "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity",
+"None", "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
+DESCRIPTION
+  }
+  validation {
+    condition     = var.kind != "Hub" || anytrue([for _, c in var.workspace_connections : contains(["AIServices", "AzureOpenAI"], c.category)])
+    error_message = <<DESCRIPTION
+When creating an AI Foundry Hub, a connection to AI Services (`category` is "AIServices") or Azure OpenAI (`category` is "AzureOpenAI") is required.
 DESCRIPTION
   }
 }

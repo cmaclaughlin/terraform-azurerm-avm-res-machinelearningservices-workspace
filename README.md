@@ -458,13 +458,13 @@ Default: `{}`
 
 ### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
 
-Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'.
+Description: DEPRECATED. This property was removed from the schema for machine learning workspaces as of 2024-10-06.
 
-**This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
+The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'.
 
 Type: `string`
 
-Default: `"identity"`
+Default: `null`
 
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
@@ -500,6 +500,8 @@ Default: `null`
 
 Description: A map of details required to connect resources to the provisioned workspace.
 
+Each connection includes the following:
+
 - `category`: The type of resource or service to be connected. Valid options include:
     "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
     "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
@@ -514,18 +516,32 @@ Description: A map of details required to connect resources to the provisioned w
     "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
     "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
 - `target`:
+- `auth_type`: The method of authentication. Valid options include:
+    "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity", "None",
+    "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
+- `credentials`: Object with the specifics for authentication. Dependent on `auth_type`.
+- `expiry_time`: (Optional) The connection's time of expiration.
+- `shared_by_all`: (Optional) Indicates whether the connection is shared to all users in the workspace.
+- `shared_user_list`: (Optional) The list of users who can use the connection.
+
+---
+
+The `credentials` block is dependent on the `auth_type`.
+
+When `auth_type` is "AAD" or "None", `credentials` should be `null`.
+
+When
 
 Type:
 
 ```hcl
 map(object({
-    category                       = string
-    target                         = string
-    auth_type                      = string
-    expiry_time                    = optional(string, null)
-    shared_by_all                  = optional(bool, false)
-    use_workspace_managed_identity = optional(bool, false)
-    shared_user_list               = optional(set(string), [])
+    category         = string
+    target           = string
+    auth_type        = string
+    expiry_time      = optional(string, null)
+    shared_by_all    = optional(bool, false)
+    shared_user_list = optional(set(string), [])
     credentials = optional(object({
       access_key_id     = optional(string, null)
       secret_access_key = optional(string, null)
@@ -542,7 +558,7 @@ map(object({
       pat               = optional(string, null)
       sas               = optional(string, null)
       security_token    = optional(string, null)
-    }), {})
+    }), null)
   }))
 ```
 

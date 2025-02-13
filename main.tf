@@ -1,18 +1,17 @@
 resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01"
   body = {
     properties = {
-      publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
-      applicationInsights      = local.application_insights_id
-      hbiWorkspace             = var.hbi_workspace
-      keyVault                 = local.key_vault_id
-      storageAccount           = var.storage_account.resource_id
-      containerRegistry        = try(var.container_registry.resource_id, null)
-      description              = var.workspace_description
-      friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
-      systemDatastoresAuthMode = var.storage_access_type
+      publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
+      applicationInsights = local.application_insights_id
+      hbiWorkspace        = var.hbi_workspace
+      keyVault            = local.key_vault_id
+      storageAccount      = var.storage_account.resource_id
+      containerRegistry   = try(var.container_registry.resource_id, null)
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -62,18 +61,17 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "hub" {
   count = var.kind == "Hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01"
   body = {
     properties = {
-      publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
-      applicationInsights      = local.application_insights_id
-      hbiWorkspace             = var.hbi_workspace
-      keyVault                 = local.key_vault_id
-      storageAccount           = var.storage_account.resource_id
-      containerRegistry        = try(var.container_registry.resource_id, null)
-      description              = var.workspace_description
-      friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
-      systemDatastoresAuthMode = var.storage_access_type
+      publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
+      applicationInsights = local.application_insights_id
+      hbiWorkspace        = var.hbi_workspace
+      keyVault            = local.key_vault_id
+      storageAccount      = var.storage_account.resource_id
+      containerRegistry   = try(var.container_registry.resource_id, null)
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -124,7 +122,7 @@ resource "azapi_resource" "hub" {
 resource "azapi_resource" "project" {
   count = var.kind == "Project" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01"
   body = {
     properties = {
       description   = var.workspace_description
