@@ -408,7 +408,7 @@ Each connection includes the following:
     "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
     "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
     "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
-- `target`: 
+- `target`: The target endpoint to connect to.
 - `auth_type`: The method of authentication. Valid options include:
     "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity", "None", 
     "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
@@ -563,6 +563,66 @@ DESCRIPTION
     condition     = var.kind != "Hub" || anytrue([for _, c in var.workspace_connections : contains(["AIServices", "AzureOpenAI"], c.category)])
     error_message = <<DESCRIPTION
 When creating an AI Foundry Hub, a connection to AI Services (`category` is "AIServices") or Azure OpenAI (`category` is "AzureOpenAI") is required.
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : c.credentials == null if contains(["AAD", "None"], c.auth_type)])
+    error_message = <<DESCRIPTION
+`credentials` must be null when `auth_type` is "AAD" or "None".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.pat) > 0 if c.auth_type == "PAT"])
+    error_message = <<DESCRIPTION
+`credentials.pat` is required when `auth_type` is "PAT".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.sas) > 0 if c.auth_type == "SAS"])
+    error_message = <<DESCRIPTION
+`credentials.sas` is required when `auth_type` is "SAS".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.keys) > 0 if c.auth_type == "CustomKeys"])
+    error_message = <<DESCRIPTION
+`credentials.keys` must contain at least one key when `auth_type` is "CustomKeys".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.key) > 0 if contains(["AccountKey", "ApiKey"], c.auth_type)])
+    error_message = <<DESCRIPTION
+`credentials.key` is required when `auth_type` is "AccountKey" or "ApiKey".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.access_key_id) > 0 && length(c.credentials.secret_access_key) > 0 if c.auth_type == "AccessKey"])
+    error_message = <<DESCRIPTION
+`credentials.access_key_id` and `credentials.secret_access_key` are required when `auth_type` is "AccessKey".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.username) > 0 && length(c.credentials.password) > 0 && length(c.credentials.security_token) > 0 if c.auth_type == "UsernamePassword"])
+    error_message = <<DESCRIPTION
+`credentials.password`, `credentials.username` and `credentials.security_token` are required when `auth_type` is "UsernamePassword".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.client_id) > 0 && length(c.credentials.client_secret) > 0 && length(c.credentials.tenant_id) > 0 if c.auth_type == "ServicePrincipal"])
+    error_message = <<DESCRIPTION
+`credentials.client_id`, `credentials.client_secret` and `credentials.tenant_id` are required when `auth_type` is "ServicePrincipal".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.auth_url) > 0 && length(c.credentials.client_secret) > 0 && length(c.credentials.dev_token) > 0 && length(c.credentials.password) > 0 && length(c.credentials.refresh_token) > 0 && length(c.credentials.username) > 0 if c.auth_type == "OAuth2"])
+    error_message = <<DESCRIPTION
+`credentials.password`, `credentials.username`, `credentials.dev_token`, `credentials.auth_url`, `credentials.client_secret` and `credentials.refresh_token` are required when `auth_type` is "OAuth2".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.client_id) > 0 && length(c.credentials.resource_id) > 0 if c.auth_type == "ManagedIdentity"])
+    error_message = <<DESCRIPTION
+`credentials.client_id` and `credentials.resource_id` are required when `auth_type` is "ManagedIdentity".
 DESCRIPTION
   }
 }

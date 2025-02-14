@@ -515,7 +515,7 @@ Each connection includes the following:
     "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
     "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
     "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
-- `target`:
+- `target`: The target endpoint to connect to.
 - `auth_type`: The method of authentication. Valid options include:
     "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity", "None",
     "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
