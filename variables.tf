@@ -361,12 +361,12 @@ variable "tags" {
   description = "(Optional) Tags of the resource."
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "workspace_connections" {
   type = map(object({
     category         = string
     target           = string
     auth_type        = string
+    name             = optional(string, null)
     expiry_time      = optional(string, null)
     shared_by_all    = optional(bool, false)
     shared_user_list = optional(set(string), [])
@@ -388,6 +388,7 @@ variable "workspace_connections" {
       security_token    = optional(string, null)
       tenant_id         = optional(string, null)
     }), null)
+    metadata = optional(map(string), {})
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -395,6 +396,7 @@ A map of details required to connect resources to the provisioned workspace.
 
 Each connection includes the following:
 
+- `name`: The name of the connection. A value will be generated if not provided.
 - `category`: The type of resource or service to be connected. Valid options include:
     "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
     "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
@@ -414,14 +416,21 @@ Each connection includes the following:
     "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
 - `credentials`: Object with the specifics for authentication. Dependent on `auth_type`.
 - `expiry_time`: (Optional) The connection's time of expiration.
-- `shared_by_all`: (Optional) Indicates whether the connection is shared to all users in the workspace.
+- `shared_by_all`: (Optional) Indicates whether the connection is shared to all projects in the workspace.
 - `shared_user_list`: (Optional) The list of users who can use the connection.
+- `metadata`: (Optional) When creating a connection to an Azure service, this object must be:
+     ```hcl
+     {
+       ApiType = "Azure"
+       ResourceId = <resource id for connected service>
+     }
+     ```
 
 ---
 
 The `credentials` block is dependent on the `auth_type`.
 
-When "AAD" or "None":
+### "AAD" and "None"
 
 ```hcl
 {
@@ -429,7 +438,7 @@ When "AAD" or "None":
 }
 ```
 
-When "AccessKey":
+### "AccessKey"
 
 ```hcl
 {
@@ -440,7 +449,7 @@ When "AccessKey":
 }
 ```
 
-When "AccountKey" or "ApiKey":
+### "AccountKey" and "ApiKey"
 
 ```hcl
 {
@@ -450,7 +459,7 @@ When "AccountKey" or "ApiKey":
 }
 ```
 
-When "CustomKeys":
+### "CustomKeys"
 
 ```hcl
 {
@@ -462,7 +471,7 @@ When "CustomKeys":
 }
 ```
 
-When "ManagedIdentity":
+### "ManagedIdentity"
 
 ```hcl
 {
@@ -473,7 +482,7 @@ When "ManagedIdentity":
 }
 ```
 
-When "OAuth2":
+### "OAuth2"
 
 ```hcl
 {
@@ -484,11 +493,18 @@ When "OAuth2":
     password = <value>
     refresh_token = <value>
     username = <value>
+    tenant_id = <value>
   }
 }
 ```
 
-When "PAT":
+- `auth_url` is required when `category` is "Concur".
+- `dev_token` is required when `category` is "GoogleAdWords".
+- `refresh_token` is required when `category` is "GoogleBigQuery", "GoogleAdWords", "Hubspot", "QuickBooks", "Square", "Xero", or "Zoho".
+- `tenant_id` is required when `category` is "QuickBooks" or "Xero".
+- `username` is required when `category` is "Concur" or "ServiceNow".
+
+### "PAT"
 
 ```hcl
 {
@@ -498,7 +514,7 @@ When "PAT":
 }
 ```
 
-When "SAS":
+### "SAS"
 
 ```hcl
 {
@@ -508,7 +524,7 @@ When "SAS":
 }
 ```
 
-When "ServicePrincipal":
+### "ServicePrincipal"
 
 ```hcl
 {
@@ -520,7 +536,7 @@ When "ServicePrincipal":
 }
 ```
 
-When "UsernamePassword":
+### "UsernamePassword"
 
 ```hcl
 {
@@ -533,7 +549,6 @@ When "UsernamePassword":
 ```
 
 DESCRIPTION
-  sensitive   = true
 
   validation {
     condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : contains(["ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift", "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb", "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics", "AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry", "CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm", "Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git", "GoogleAdWords", "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix", "Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql", "Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix", "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud", "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow", "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"], c.category)])
@@ -614,15 +629,15 @@ DESCRIPTION
 DESCRIPTION
   }
   validation {
-    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.auth_url) > 0 && length(c.credentials.client_secret) > 0 && length(c.credentials.dev_token) > 0 && length(c.credentials.password) > 0 && length(c.credentials.refresh_token) > 0 && length(c.credentials.username) > 0 if c.auth_type == "OAuth2"])
-    error_message = <<DESCRIPTION
-`credentials.password`, `credentials.username`, `credentials.dev_token`, `credentials.auth_url`, `credentials.client_secret` and `credentials.refresh_token` are required when `auth_type` is "OAuth2".
-DESCRIPTION
-  }
-  validation {
     condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.client_id) > 0 && length(c.credentials.resource_id) > 0 if c.auth_type == "ManagedIdentity"])
     error_message = <<DESCRIPTION
 `credentials.client_id` and `credentials.resource_id` are required when `auth_type` is "ManagedIdentity".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.metadata) > 0 if contains(["ADLSGen2", "AIServices", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb", "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics", "AzureTableStorage", "BingLLMSearch", "CognitiveSearch", "CognitiveService", "ContainerRegistry", "CosmosDb", "CosmosDbMongoDbApi"], c.category)])
+    error_message = <<DESCRIPTION
+`metadata` is required when connecting to Azure services. `APIType` = "Azure" and `ResourceId` = <the resource id>
 DESCRIPTION
   }
 }

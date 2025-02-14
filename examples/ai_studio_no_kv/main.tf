@@ -35,6 +35,27 @@ locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
 
+module "ai_services" {
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "0.6.0"
+
+  kind                          = "AIServices"
+  location                      = azurerm_resource_group.this.location
+  name                          = module.naming.cognitive_account.name_unique
+  resource_group_name           = azurerm_resource_group.this.name
+  sku_name                      = "S0"
+  public_network_access_enabled = true
+}
+
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.this.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.this.name
+}
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -43,15 +64,30 @@ module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location                = azurerm_resource_group.this.location
-  name                    = local.name
-  resource_group_name     = azurerm_resource_group.this.name
-  kind                    = "Hub"
-  key_vault               = { use_microsoft_managed_key_vault = true }
+  location            = azurerm_resource_group.this.location
+  name                = local.name
+  resource_group_name = azurerm_resource_group.this.name
+  kind                = "Hub"
+  key_vault           = { use_microsoft_managed_key_vault = true }
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
   workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "Disabled"
     spark_ready    = true
   }
   enable_telemetry = var.enable_telemetry
+  workspace_connections = {
+    ai = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      auth_type     = "AAD"
+      shared_by_all = true
+      metadata = {
+        apiType    = "Azure"
+        resourceId = module.ai_services.resource_id
+      }
+    }
+  }
 }

@@ -35,7 +35,6 @@ locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
 
-
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_storage_account" "example" {
@@ -54,6 +53,18 @@ resource "azurerm_key_vault" "example" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
+module "ai_services" {
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "0.6.0"
+
+  kind                          = "AIServices"
+  location                      = azurerm_resource_group.example.location
+  name                          = module.naming.cognitive_account.name_unique
+  resource_group_name           = azurerm_resource_group.example.name
+  sku_name                      = "S0"
+  public_network_access_enabled = true
+}
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -67,7 +78,9 @@ module "aihub" {
   resource_group_name     = azurerm_resource_group.example.name
   kind                    = "Hub"
   workspace_friendly_name = "AI Studio Hub"
-
+  managed_identities = {
+    system_assigned = true
+  }
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }
@@ -76,6 +89,18 @@ module "aihub" {
     resource_id = azurerm_storage_account.example.id
   }
 
+  workspace_connections = {
+    ai = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      auth_type     = "AAD"
+      shared_by_all = true
+      metadata = {
+        apiType    = "Azure"
+        resourceId = module.ai_services.resource_id
+      }
+    }
+  }
   enable_telemetry = var.enable_telemetry
 }
 

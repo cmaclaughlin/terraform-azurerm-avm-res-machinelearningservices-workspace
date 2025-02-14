@@ -45,6 +45,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -502,6 +503,7 @@ Description: A map of details required to connect resources to the provisioned w
 
 Each connection includes the following:
 
+- `name`: The name of the connection. A value will be generated if not provided.
 - `category`: The type of resource or service to be connected. Valid options include:
     "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
     "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
@@ -521,14 +523,22 @@ Each connection includes the following:
     "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
 - `credentials`: Object with the specifics for authentication. Dependent on `auth_type`.
 - `expiry_time`: (Optional) The connection's time of expiration.
-- `shared_by_all`: (Optional) Indicates whether the connection is shared to all users in the workspace.
+- `shared_by_all`: (Optional) Indicates whether the connection is shared to all projects in the workspace.
 - `shared_user_list`: (Optional) The list of users who can use the connection.
+- `metadata`: (Optional) When creating a connection to an Azure service, this object must be:
+     ```hcl
+     {
+       ApiType = "Azure"
+       ResourceId = <resource id for connected service>
+     }
+     
+```
 
 ---
 
 The `credentials` block is dependent on the `auth_type`.
 
-When "AAD" or "None":
+### "AAD" and "None"
 
 ```hcl
 {
@@ -536,7 +546,7 @@ When "AAD" or "None":
 }
 ```
 
-When "AccessKey":
+### "AccessKey"
 
 ```hcl
 {
@@ -547,7 +557,7 @@ When "AccessKey":
 }
 ```
 
-When "AccountKey" or "ApiKey":
+### "AccountKey" and "ApiKey"
 
 ```hcl
 {
@@ -557,7 +567,7 @@ When "AccountKey" or "ApiKey":
 }
 ```
 
-When "CustomKeys":
+### "CustomKeys"
 
 ```hcl
 {
@@ -569,7 +579,7 @@ When "CustomKeys":
 }
 ```
 
-When "ManagedIdentity":
+### "ManagedIdentity"
 
 ```hcl
 {
@@ -580,7 +590,7 @@ When "ManagedIdentity":
 }
 ```
 
-When "OAuth2":
+### "OAuth2"
 
 ```hcl
 {
@@ -591,11 +601,18 @@ When "OAuth2":
     password = <value>
     refresh_token = <value>
     username = <value>
+    tenant_id = <value>
   }
 }
 ```
 
-When "PAT":
+- `auth_url` is required when `category` is "Concur".
+- `dev_token` is required when `category` is "GoogleAdWords".
+- `refresh_token` is required when `category` is "GoogleBigQuery", "GoogleAdWords", "Hubspot", "QuickBooks", "Square", "Xero", or "Zoho".
+- `tenant_id` is required when `category` is "QuickBooks" or "Xero".
+- `username` is required when `category` is "Concur" or "ServiceNow".
+
+### "PAT"
 
 ```hcl
 {
@@ -605,7 +622,7 @@ When "PAT":
 }
 ```
 
-When "SAS":
+### "SAS"
 
 ```hcl
 {
@@ -615,7 +632,7 @@ When "SAS":
 }
 ```
 
-When "ServicePrincipal":
+### "ServicePrincipal"
 
 ```hcl
 {
@@ -627,7 +644,7 @@ When "ServicePrincipal":
 }
 ```
 
-When "UsernamePassword":
+### "UsernamePassword"
 
 ```hcl
 {
@@ -646,6 +663,7 @@ map(object({
     category         = string
     target           = string
     auth_type        = string
+    name             = optional(string, null)
     expiry_time      = optional(string, null)
     shared_by_all    = optional(bool, false)
     shared_user_list = optional(set(string), [])
@@ -667,6 +685,7 @@ map(object({
       security_token    = optional(string, null)
       tenant_id         = optional(string, null)
     }), null)
+    metadata = optional(map(string), {})
   }))
 ```
 
@@ -752,7 +771,11 @@ The following outputs are exported:
 
 ### <a name="output_ai_services_service_connection"></a> [ai\_services\_service\_connection](#output\_ai\_services\_service\_connection)
 
-Description: The service connection between the AIServices and the workspace, if created.
+Description: DEPRECATED. The service connection between the AIServices and the workspace, if created.
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: The name of the created machine learning workspace.
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
@@ -760,7 +783,11 @@ Description: A map of the private endpoints created.
 
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
-Description: The ID of the machine learning workspace.
+Description: The ID of the created machine learning workspace.
+
+### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
+
+Description: The principal ID of the system-assigned managed identity for the created workspace, if created.
 
 ### <a name="output_workspace"></a> [workspace](#output\_workspace)
 

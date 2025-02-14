@@ -1,6 +1,11 @@
 output "ai_services_service_connection" {
-  description = "The service connection between the AIServices and the workspace, if created."
+  description = "DEPRECATED. The service connection between the AIServices and the workspace, if created."
   value       = null
+}
+
+output "name" {
+  description = "The name of the created machine learning workspace."
+  value       = local.aml_resource.name
 }
 
 output "private_endpoints" {
@@ -9,8 +14,13 @@ output "private_endpoints" {
 }
 
 output "resource_id" {
-  description = "The ID of the machine learning workspace."
+  description = "The ID of the created machine learning workspace."
   value       = local.aml_resource.id
+}
+
+output "system_assigned_mi_principal_id" {
+  description = "The principal ID of the system-assigned managed identity for the created workspace, if created."
+  value       = var.managed_identities.system_assigned ? try(local.aml_resource.identity[0].principal_id, null) : null
 }
 
 output "workspace" {
